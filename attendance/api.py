@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from datetime import date
+from pathlib import Path
 from typing import Iterator
 
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from loguru import logger
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -12,9 +15,22 @@ from .core import DEFAULT_TARGET_PCT, DayStatus, compute_stats, parse_quarter, q
 from .db import get_session_factory
 from .service import delete_day, get_day, list_days, upsert_day
 
+STATIC_DIR = Path(__file__).parent / "static"
+
 app = FastAPI(title="Attendance Tracker", version="0.1.0")
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 _session_factory = get_session_factory()
+
+
+@app.get("/", include_in_schema=False)
+def index() -> FileResponse:
+    """Serve the frontend's single HTML page.
+
+    :returns: ``static/index.html``.
+    :rtype: fastapi.responses.FileResponse
+    """
+    return FileResponse(STATIC_DIR / "index.html")
 
 
 def get_db() -> Iterator[Session]:
@@ -44,6 +60,13 @@ class DayOut(BaseModel):
     day: date
     status: DayStatus
     note: str | None = None
+
+
+class PeriodOut(BaseModel):
+    """Response body for the ``/period`` endpoint."""
+
+    start: date
+    end: date
 
 
 class StatsOut(BaseModel):
@@ -93,6 +116,24 @@ def _resolve_period(quarter: str | None, start: date | None, end: date | None) -
         raise HTTPException(status_code=400, detail="start and end must be given together")
     _, _, qstart, qend = quarter_bounds(date.today())
     return qstart, qend
+
+
+@app.get("/period", response_model=PeriodOut)
+def read_period(quarter: str | None = None) -> PeriodOut:
+    """Resolve a quarter label (or the current quarter) into date bounds.
+
+    Used by the frontend so it never has to duplicate the quarter-bounds
+    calculation in JavaScript.
+
+    :param quarter: a ``YYYY-Qn`` label, or ``None`` for the current
+        calendar quarter.
+    :type quarter: str | None
+    :returns: the resolved ``(start, end)`` bounds.
+    :rtype: PeriodOut
+    :raises fastapi.HTTPException: 400 if ``quarter`` is malformed.
+    """
+    start, end = _resolve_period(quarter, None, None)
+    return PeriodOut(start=start, end=end)
 
 
 @app.put("/days/{day}", response_model=DayOut)

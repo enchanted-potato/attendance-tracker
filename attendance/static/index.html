@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Attendance Tracker</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Office Attendance</h1>
+    <div class="controls">
+      <label>
+        Quarter
+        <select id="quarter-select"></select>
+      </label>
+      <label>
+        As of
+        <input type="date" id="as-of-input" />
+      </label>
+      <label>
+        Target %
+        <input type="number" id="target-input" value="60" min="1" max="100" step="1" />
+      </label>
+    </div>
+  </header>
+
+  <main>
+    <section class="stats" id="stats-section" aria-live="polite">
+      <div class="stat-card percentage" id="stat-percentage">
+        <span class="stat-value" id="stat-pct-value">&mdash;</span>
+        <span class="stat-label">attendance</span>
+        <span class="stat-badge" id="stat-badge"></span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="stat-office">0</span>
+        <span class="stat-label">office days</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="stat-remote">0</span>
+        <span class="stat-label">remote days</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="stat-leave">0</span>
+        <span class="stat-label">leave days</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value" id="stat-holiday">0</span>
+        <span class="stat-label">holiday days</span>
+      </div>
+      <div class="stat-card wide" id="projection-card">
+        <span class="stat-label" id="projection-text">&nbsp;</span>
+      </div>
+    </section>
+
+    <section class="quick-log">
+      <span>Log today:</span>
+      <div class="quick-log-buttons">
+        <button data-status="office" class="btn btn-office">Office</button>
+        <button data-status="remote" class="btn btn-remote">Remote</button>
+        <button data-status="leave" class="btn btn-leave">Leave</button>
+        <button data-status="holiday" class="btn btn-holiday">Holiday</button>
+      </div>
+      <span id="quick-log-status" class="quick-log-status"></span>
+    </section>
+
+    <section class="days">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Day</th>
+            <th>Status</th>
+            <th>Note</th>
+          </tr>
+        </thead>
+        <tbody id="days-body"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer>
+    <span id="error-banner" class="error-banner" role="alert"></span>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

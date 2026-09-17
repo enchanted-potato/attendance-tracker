@@ -89,8 +89,17 @@ uv run uvicorn attendance.api:app --reload
 - `GET /days?start=2026-07-01&end=2026-09-30`
 - `GET /stats?quarter=2026-Q3&as_of=2026-09-17&target=60`
   (or `?start=...&end=...` instead of `quarter`)
+- `GET /period?quarter=2026-Q3` — resolve a quarter label to its start/end dates
 
 Interactive docs at `http://127.0.0.1:8000/docs` once running.
+
+## Frontend
+
+A small web UI is served by the same FastAPI app at `http://127.0.0.1:8000/`
+once `uvicorn` is running (see above). Pick a quarter, an as-of date and a
+target %, then log days by picking a status per row or with the "Log today"
+buttons — changes are saved immediately via the API above. It's plain
+HTML/CSS/JS with no build step, served straight from `attendance/static/`.
 
 ## Tests
 

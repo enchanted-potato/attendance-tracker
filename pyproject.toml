@@ -16,7 +16,10 @@ dependencies = [
 attendance = "attendance.cli:main"
 
 [dependency-groups]
-dev = ["pytest>=8.0", "httpx>=0.27"]
+dev = [
+    "pytest>=8.0",
+    "httpx>=0.27",
+]
 
 [tool.uv]
 default-groups = ["dev"]
