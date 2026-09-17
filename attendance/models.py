@@ -15,6 +15,10 @@ class AttendanceDay(Base):
 
     Only days that matter for the calculation need a row: weekends are
     derived from the date itself and never need to be logged.
+
+    :ivar day: the calendar date this row describes; primary key.
+    :ivar status: one of the :class:`attendance.core.DayStatus` values.
+    :ivar note: optional free-text note.
     """
 
     __tablename__ = "attendance_days"

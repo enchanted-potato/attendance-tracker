@@ -16,33 +16,41 @@ override with the `ATTENDANCE_DB` env var or `attendance --db PATH`).
 
 ## Install
 
+Requires [uv](https://docs.astral.sh/uv/).
+
 ```bash
-python3 -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
+uv sync
 ```
+
+This creates `.venv` and installs the runtime deps plus the `dev` group
+(pytest, httpx) from `uv.lock`. Run everything below with `uv run ...`,
+or `source .venv/bin/activate` first and drop the `uv run` prefix.
 
 ## CLI usage
 
 ```bash
 # Log days (status: office | remote | leave | holiday)
-attendance log 2026-09-15 office
-attendance log 2026-09-16 remote
-attendance log 2026-09-17 leave --note "doctor's appointment"
-attendance log today office
+uv run attendance log 2026-09-15 office
+uv run attendance log 2026-09-16 remote
+uv run attendance log 2026-09-17 leave --note "doctor's appointment"
+uv run attendance log today office
 
 # Remove a logged day
-attendance unlog 2026-09-16
+uv run attendance unlog 2026-09-16
 
 # See your stats for the current quarter, as of today
-attendance stats
+uv run attendance stats
 
 # As of a specific date, or a specific/custom quarter
-attendance stats --as-of 2026-08-31
-attendance stats --quarter 2026-Q3
-attendance stats --start 2026-07-01 --end 2026-09-30
+uv run attendance stats --as-of 2026-08-31
+uv run attendance stats --quarter 2026-Q3
+uv run attendance stats --start 2026-07-01 --end 2026-09-30
 
 # List everything logged in a period
-attendance list --quarter 2026-Q3
+uv run attendance list --quarter 2026-Q3
+
+# -v / --verbose enables debug logging (via loguru) on any command
+uv run attendance -v log today office
 ```
 
 Example output:
@@ -72,7 +80,7 @@ of the quarter.
 ## API usage
 
 ```bash
-uvicorn attendance.api:app --reload
+uv run uvicorn attendance.api:app --reload
 ```
 
 - `PUT /days/{day}` — body `{"day": "2026-09-15", "status": "office", "note": null}`
@@ -86,6 +94,8 @@ Interactive docs at `http://127.0.0.1:8000/docs` once running.
 
 ## Tests
 
+Unit tests use pytest and cover the core date/percentage math.
+
 ```bash
-pytest
+uv run pytest
 ```

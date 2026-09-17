@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import sys
 from datetime import date, datetime
 
 import click
+from loguru import logger
 
 from .core import DEFAULT_TARGET_PCT, DayStatus, compute_stats, parse_quarter, quarter_bounds
 from .db import get_session_factory
@@ -10,6 +12,15 @@ from .service import delete_day, list_days, upsert_day
 
 
 def _parse_date(value: str) -> date:
+    """Parse a CLI date argument.
+
+    :param value: ``"today"`` or a date string in ``YYYY-MM-DD`` format.
+    :type value: str
+    :returns: the parsed date.
+    :rtype: datetime.date
+    :raises click.BadParameter: if ``value`` isn't ``"today"`` or a valid
+        ``YYYY-MM-DD`` string.
+    """
     if value == "today":
         return date.today()
     try:
@@ -19,6 +30,20 @@ def _parse_date(value: str) -> date:
 
 
 def _resolve_period(quarter: str | None, start: str | None, end: str | None) -> tuple[date, date]:
+    """Resolve a CLI period selection into concrete start/end dates.
+
+    :param quarter: a ``YYYY-Qn`` label, or ``None``.
+    :type quarter: str | None
+    :param start: a ``YYYY-MM-DD`` start date, or ``None``.
+    :type start: str | None
+    :param end: a ``YYYY-MM-DD`` end date, or ``None``.
+    :type end: str | None
+    :returns: a ``(start_date, end_date)`` tuple. Falls back to the current
+        calendar quarter if neither ``quarter`` nor ``start``/``end`` is
+        given.
+    :rtype: tuple[datetime.date, datetime.date]
+    :raises click.UsageError: if only one of ``start``/``end`` is given.
+    """
     if quarter:
         return parse_quarter(quarter)
     if start and end:
@@ -31,9 +56,23 @@ def _resolve_period(quarter: str | None, start: str | None, end: str | None) -> 
 
 @click.group()
 @click.option("--db", "db_path", default=None, help="Path to the SQLite database file.")
+@click.option("-v", "--verbose", is_flag=True, help="Enable debug logging.")
 @click.pass_context
-def main(ctx: click.Context, db_path: str | None) -> None:
-    """Track office attendance against a quarterly target."""
+def main(ctx: click.Context, db_path: str | None, verbose: bool) -> None:
+    """Track office attendance against a quarterly target.
+
+    :param ctx: the Click context, used to share the session factory with
+        subcommands.
+    :type ctx: click.Context
+    :param db_path: path to the SQLite database file, or ``None`` to use
+        the default (see :data:`attendance.db.DEFAULT_DB_PATH`).
+    :type db_path: str | None
+    :param verbose: enable debug-level logging to stderr.
+    :type verbose: bool
+    """
+    logger.remove()
+    logger.add(sys.stderr, level="DEBUG" if verbose else "WARNING")
+
     ctx.ensure_object(dict)
     from .db import DEFAULT_DB_PATH
 
